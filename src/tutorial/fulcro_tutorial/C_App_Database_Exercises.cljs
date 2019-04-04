@@ -6,18 +6,23 @@
             [cljs.reader :as r]))
 
 (def cars-table
-  {
+  {:cars/by-id
+   {1 {:make "Nissan"}
+    2 {:make "Dodge"}
+    3 {:make "Ford"}}
                                         ; TODO (exercise 1): Add a :cars/by-id table
    })
 
 (def favorites
-                                        ; TODO (exercise 2): merge your `cars-table` from above here
-  {
+(merge cars-table         ; TODO (exercise 2): merge your `cars-table` from above here
+ {:favorite-car [:cars/by-id 1]
                                         ; TODO (exercise 2): Add a :favorite-car key that points to the Nissan Leaf via an ident
-   })
+  }))
 
 (def ex3-uidb
-  {
+  {:main-panel
+   {:toolbar {:tools [ {:id 1 :label "Cut"} {:id 2 :label "Copy"} ]}
+    :canvas { :data [ {:id 5 :x 1 :y 3} ]}}
                                         ; TODO (exercise 3): Add tables. See exercise text.
    })
 
@@ -66,7 +71,7 @@
   (is (= "Nissan" (->> (get favorites :favorite-car) (get-in favorites) (:make)))))
 
 (dc/deftest exercise-3
-  "This exercise has you build up more of a UI, but all as normalized
+=  "This exercise has you build up more of a UI, but all as normalized
   components.
 
   Say you want to have the following UI data:

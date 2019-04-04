@@ -239,7 +239,7 @@
           sideband-data {:incHandler  (fn [] (swap! data-atom-from-devcards update-in [:number] inc))
                          :boolHandler (fn [] (swap! data-atom-from-devcards update-in [:b] not))}]
       (ui-root-computed (prim/computed prop-data sideband-data))))
-  {:number 42 :people [{:name "Sally"}] :b false}
+  {:number 43 :people [{:name "Sally"} {:name "Nobody"}] :b false}
   {:inspect-data true
    :history      true})
 

@@ -115,14 +115,47 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; EX1-3: Code a todo list
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-#_(defsc TodoItem [this props]
-    )
+(defsc TodoItem [this {:keys [item/id item/label item/done] :as props}]
+  #_{:initial-state (fn [xxx]
+                    (js/console.log xxx)
+                    {})
+   :query [:item/id]}
+  (dom/li
+   (dom/input (merge {:type "checkbox"}
+                     (when done
+                       {:checked "checked"})))
+   (do
+     (js/console.log id label done)
+     label)
+   (dom/button "X")))
 
-#_(defsc ItemList [this props]
-    )
+(def ui-todo-item (prim/factory TodoItem {:keyfn :item/id}))
 
-(defsc TodoList [this props]
-  (dom/div "TODO"))
+(defsc ItemList [this props]
+  #_{:initial-state (fn [params] {:items [(prim/get-initial-state TodoItem {:item/id 1})]})
+   :query [{:items (prim/get-query TodoItem)}]}
+  (js/console.log "ITEMS: " props)
+  (dom/div
+   (dom/h4 "TODO")
+   (dom/input {:type "text"})
+   (dom/button "Add")
+   (dom/ol
+    (js/console.log props)
+    (map #(ui-todo-item % %2) props))))
+
+(def ui-item-list (prim/factory ItemList))
+
+(defsc TodoList [this {:keys [items] :as props}]
+  {:initial-state (fn [params] {:items {1 {:item/id    1
+                                           :item/label "ITEM 1"
+                                           :item/done  false}
+                                        2 {:item/id    2
+                                           :item/label "ITEM 2"
+                                           :item/done  false}
+                                        3 {:item/id    3
+                                           :item/label "ITEM 3"
+                                           :item/done  false}}})}
+  (dom/div (ui-item-list items)))
 
 (defcard-fulcro todo-list-application
   "This card can be used to show your application.

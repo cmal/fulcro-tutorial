@@ -1,7 +1,10 @@
 (ns user
   (:require
     [figwheel-sidecar.system :as fig]
-    [com.stuartsierra.component :as component]))
+    [com.stuartsierra.component :as component]
+    [clojure.tools.namespace.repl :as tools-ns :refer [disable-reload! refresh clear set-refresh-dirs]]
+    [solutions.putting-together :as pt])
+  (:use org.httpkit.server))
 
 (def figwheel (atom nil))
 
@@ -26,3 +29,13 @@
      (swap! figwheel component/start)
      (fig/cljs-repl (:figwheel-system @figwheel)))))
 
+(defn ex-start []
+  (reset! pt/server (pt/make-server))
+  (component/start @pt/server))
+
+(defn ex-stop []
+  (component/stop @pt/server))
+
+(defn ex-restart []
+  (ex-stop)
+  (ex-start))

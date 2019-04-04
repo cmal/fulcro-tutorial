@@ -11,12 +11,17 @@
                  [cljsjs/d3 "3.5.7-1"]
                  [hickory "0.7.1"]
                  [devcards "0.2.4" :exclusions [org.clojure/clojure cljsjs/react cljsjs/react-dom]]
-                 [cljsjs/codemirror "5.8.0-0"]]
+                 [cljsjs/codemirror "5.8.0-0"]
+                 [bidi "2.1.3"]
+                 [bk/ring-gzip "0.3.0"]
+                 [http-kit "2.3.0"]
+                 ]
 
   :source-paths ["src/dev" "src/tutorial"]
   :resource-paths ["resources"]
 
-  :jvm-opts ["-XX:-OmitStackTraceInFastThrow" "-Xmx1024m" "-Xms512m"]
+  :jvm-opts ["-XX:-OmitStackTraceInFastThrow" "-Xmx1024m" "-Xms512m"
+             "--add-modules" "java.xml.bind"] ;; for Java 10
   :clean-targets ^{:protect false} ["resources/public/js" "target"]
 
   :cljsbuild {:builds

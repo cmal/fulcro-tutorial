@@ -58,7 +58,7 @@
   and function composition):
 
   NOTE: We name our component factories with a `ui-` prefix. This makes it much easier for the reader to
-  visually distinguish our components from regular functions, and also prevents accidental name clases with
+  visually distinguish our components from regular functions, and also prevents accidental name clashes with
   data. For example, you might have `:person/address` that turns into a local data item called `address`. If your
   React renderer for that was also called `address` you'd have a problem.
 
@@ -75,21 +75,25 @@
 (declare ui-person)
 
 ;; TODO: (ex 4) Obtain the 'computed' onDelete handler
-(defsc Person [this props computed]
-  {:initLocalState (fn [] {})}                              ; TODO (ex 3): Add initial local state here
-  (let [name    "What's my :person/name?"                   ; TODO (ex 1): Get the Fulcro properties from this for `name` and `mate`
-        mate    nil
-        checked false]                                      ; TODO (ex 3): Component local state
+(defsc Person [this props {:keys [onDelete]}]
+  {:initLocalState (fn [] {:checked true})}                              ; TODO (ex 3): Add initial local state here
+  (let [name    (:person/name props) ; TODO (ex 1): Get the Fulcro properties from this for `name` and `mate`
+        mate    (:person/mate props)
+        checked (prim/get-state this :checked)]               ; TODO (ex 3): Component local state
     (dom/li
       (dom/input {:type    "checkbox"
-                      :onClick (fn [e] (println "TODO ex 3"))
-                      :checked false                        ; TODO (ex 3): Modify local state
-                      })
-      (dom/span name)                                   ; TODO (ex 3): Make name bold when checked
-      (dom/button "X")                                  ; TODO (ex 4): Call onDelete handler, if present
+                  :onClick #(prim/update-state! this update :checked not)
+                  :checked checked                        ; TODO (ex 3): Modify local state
+                  })
+      (dom/span (when checked
+                  {:style {:fontWeight "bold"}}) name) ; TODO (ex 3): Make name bold when checked
+      (dom/button
+       {:onClick (fn [e]
+                   (onDelete props))}
+       "X")                                  ; TODO (ex 4): Call onDelete handler, if present
       (when mate (dom/ul (ui-person mate))))))
 
-(def ui-person (prim/factory Person))
+(def ui-person (prim/factory Person {:keyfn :person/name}))
 
 (defcard exercise-1
   "## Exercise 1 - A UI component
@@ -109,7 +113,8 @@
 
 (defsc PeopleWidget [this props]
   ;; TODO (ex 4): Create a deletePerson function
-  (let [people []]                                          ; TODO (ex 2): `people` should come from the props
+  (let [deletePerson (fn [p] (js/console.log "delete" p))
+        people (:people props)]  ; TODO (ex 2): `people` should come from the props
     (dom/div
       (if (= nil people)
         (dom/span "Loading...")
@@ -117,14 +122,14 @@
           (dom/button {} "Save")
           (dom/button {} "Refresh List")
           ;; TODO (ex 4): Pass deletePerson as the onDelete handler to person element
-          (dom/ul (map #(ui-person %) people)))))))
+          (dom/ul (map #(ui-person (prim/computed % {:onDelete deletePerson})) people)))))))
 
 (def ui-people (prim/factory PeopleWidget))
 
 (defsc Root [this props]
-  (let [widget     nil
-        new-person nil
-        last-error nil]                                     ; TODO (ex 2): Extract the proper props for each var.
+  (let [{:keys [widget 
+                new-person
+                last-error]} props] ; TODO (ex 2): Extract the proper props for each var.
     (dom/div
       (dom/div (when (not= "" last-error) (str "Error " last-error)))
       (dom/div

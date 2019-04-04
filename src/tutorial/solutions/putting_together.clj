@@ -2,12 +2,43 @@
   (:require [fulcro.easy-server :as easy]
             [fulcro.client.primitives :as prim]
             [fulcro.logging :as log]
-            [fulcro.server :refer [defmutation defquery-root defquery-entity]]))
+            [fulcro.server :refer [defmutation defquery-root defquery-entity
+                                   new-config map->Config]])
+  (:use org.httpkit.server))
+
+
+(def server (atom nil))
+
+(defn make-server []
+  (easy/make-fulcro-server
+   :config-path "config/exercise.edn"))
+
+(defquery-root :something
+  (value [env params] 66))
+
+
+
+
+
+
+
+
+
+
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; SOLUTIONS ARE BELOW.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+
+
+
+
+
 (comment
   ; SETTING UP:
   (def system (atom nil))

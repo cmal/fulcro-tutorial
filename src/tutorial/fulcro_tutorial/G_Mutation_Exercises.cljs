@@ -38,9 +38,8 @@
 ; TODO: Exercise 2: Implement this mutation
 (defmutation ex2-inc [{:keys [id]}]
   (action [{:keys [state]}]
-    (swap! state update-in [:child/by-id id :n] inc)
-    nil                                                     ;  placeholder body
-    ))
+          (swap! state update-in [:child/by-id id :n] inc))
+  #_(refresh [env] [:items]))
 
 
 (defsc Ex2-Child [this {:keys [id n]}]
@@ -73,7 +72,8 @@
 
 (defmutation ex3-dec [{:keys [id]}]
   (action [{:keys [state]}]
-    (swap! state update-in [:child/by-id id :n] dec)) )
+          (swap! state update-in [:child/by-id id :n] dec))
+  #_(refresh [env] [:items]))
 
 (defsc Ex3-Item [this {:keys [id n]}]
   {:query [:id :n]
@@ -92,8 +92,8 @@
   (dom/div {:style {:float "left" :width "300px"}}
     (dom/h4 (str title (when (= 0 min) (str " (n <= " max ")"))))
     (dom/ul (->> items
-                  (filter (fn [{:keys [n]}] (<= min n max)))
-                  (map ui-ex3-item)))))
+                 (filter (fn [{:keys [n]}] (<= min n max)))
+                 (map ui-ex3-item)))))
 
 (def ui-ex3-list (prim/factory Ex3-List {:keyfn :id}))
 
@@ -140,34 +140,37 @@
                  2 {:id 2 :n 9}}}
   {:inspect-data true})
 
-(defsc Ex4-Item [this {:keys [id n]} computed-callbacks] ; TODO: destructure the callbacks out of computed
+(defsc Ex4-Item [this {:keys [id n]} {:keys [onInc onDec]}] ; TODO: destructure the callbacks out of computed
   {:query [:id :n]
    :ident [:child/by-id :id]}
   (dom/li
     (dom/span "n: " n)
     ; TODO: MOVE THESE TO THE PARENT, and trigger callbacks (received from computed) from here instead
-    (dom/button {:onClick #(prim/transact! this `[(ex2-inc {:id ~id})])} "Increment")
-    (dom/button {:onClick #(prim/transact! this `[(ex3-dec {:id ~id})])} "Decrement")))
+    (dom/button {:onClick #(onInc id)} "Increment")
+    (dom/button {:onClick #(onDec id)} "Decrement")))
 
 (def ui-ex4-item (prim/factory Ex4-Item {:keyfn :id}))
 
-(defsc Ex4-List [this {:keys [title min max items] :or {min 0 max 1000000}} computed-callbacks] ; TODO: pass the callbacks through to the items
+(defsc Ex4-List [this {:keys [title min max items] :or {min 0 max 1000000}} computed-callbacks]
+  ;; TODO: pass the callbacks through to the items
   {:query [:id :title :max :min {[:items '_] (prim/get-query Ex4-Item)}]
    :ident [:list/by-id :id]}
   (dom/div {:style {:float "left" :width "300px"}}
-    (dom/h4 (str title (when (= 0 min) (str " (n <= " max ")"))))
-    (dom/ul (->> items
-                  (filter (fn [{:keys [n]}] (<= min n max)))
-                  ; TODO: Pass through the callbacks. Remember to use computed!
-                  (map ui-ex4-item)))))
+           (dom/h4 (str title (when (= 0 min) (str " (n <= " max ")"))))
+           (dom/ul (->> items
+                        (filter (fn [{:keys [n]}] (<= min n max)))
+                                        ; TODO: Pass through the callbacks. Remember to use computed!
+                        (map #(ui-ex4-item (prim/computed % computed-callbacks)))))))
 
 (def ui-ex4-list (prim/factory Ex4-List {:keyfn :id}))
 
 (defsc Ex4-Root [this {:keys [ui/react-key lists]}]
   {:query [:ui/react-key {:lists (prim/get-query Ex4-List)}]}
-  ; TODO: Create the callbacks, and pass them down the tree. Remember to use computed!
-  (dom/div {:key react-key}
-    (map ui-ex4-list lists)))
+  ;; TODO: Create the callbacks, and pass them down the tree. Remember to use computed!
+  (let [onInc (fn [id] (prim/transact! this `[(ex2-inc {:id ~id})]))
+        onDec (fn [id] (prim/transact! this `[(ex3-dec {:id ~id})]))]
+   (dom/div {:key react-key}
+            (map #(ui-ex4-list (prim/computed % {:onInc onInc :onDec onDec})) lists))))
 
 
 (defcard-fulcro mutation-exercise-4
